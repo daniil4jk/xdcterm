@@ -1,5 +1,7 @@
 # XDCterm
 
+![XDCterm icon](frontend/public/icon.png)
+
 Terminal emulator for Delta Chat.
 
 ---
