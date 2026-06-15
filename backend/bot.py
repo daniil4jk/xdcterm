@@ -1,5 +1,6 @@
 import fcntl
 import os
+import socket
 import pty
 import struct
 import termios
@@ -75,7 +76,7 @@ def spawn_pty(bot, accid: int, msgid: int) -> None:
 def send_webxdc(bot, accid: int, chatid: int, contact_id: int) -> int:
     c = bot.rpc.get_contact(accid, contact_id)
     db.upsert_user(contact_id, c.display_name, c.address)
-    msgid = bot.rpc.send_msg(accid, chatid, MsgData(text="hi", file=WEBXDC_FILE))
+    msgid = bot.rpc.send_msg(accid, chatid, MsgData(file=WEBXDC_FILE))
     bot.rpc.send_webxdc_realtime_advertisement(accid, msgid)
     db.add_message(msgid, contact_id)
     return msgid
@@ -196,6 +197,16 @@ def on_ad_received(bot, accid, event) -> None:
 @cli.on(events.RawEvent(func=lambda e: e.kind == "WebxdcInstanceDeleted"))
 def on_instance_deleted(bot, accid, event) -> None:
     _kill_pty(event.msg_id, bot, accid, "exited")
+
+
+@cli.on_start
+def on_start(bot, args) -> None:
+    hostname = os.environ.get("HOSTNAME") or socket.gethostname()
+    display_name = f"{hostname} terminal"
+    for accid in bot.rpc.get_all_account_ids():
+        current = bot.rpc.get_config(accid, "displayname")
+        if not current:
+            bot.rpc.set_config(accid, "displayname", display_name)
 
 
 if __name__ == "__main__":
