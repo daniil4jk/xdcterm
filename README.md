@@ -38,6 +38,28 @@ uv run bot.py
 
 ---
 
+## Деплой
+
+Сервис запускается от непривилегированного пользователя через systemd.
+
+### Установка
+
+```bash
+cp xdcterm.service ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now xdcterm
+sudo loginctl enable-linger user
+```
+
+### Логи
+
+```bash
+journalctl --user -u xdcterm -f
+```
+
+
+---
+
 ## Команды бота
 
 | Команда | Описание |
@@ -77,27 +99,6 @@ uv run bot.py
 
 Heartbeat: фронтенд шлёт `LIFECYCLE_OPEN` каждую секунду, пока видим.  
 `LIFECYCLE_CLOSE` — при hide/pagehide.
-
----
-
-## Деплой (systemd user service)
-
-Сервис запускается от непривилегированного пользователя через user systemd.
-
-### Установка
-
-```bash
-cp xdcterm.service ~/.config/systemd/user/
-systemctl --user daemon-reload
-systemctl --user enable --now xdcterm
-sudo loginctl enable-linger user
-```
-
-### Логи
-
-```bash
-journalctl --user -u xdcterm -f
-```
 
 ---
 
