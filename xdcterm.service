@@ -5,10 +5,12 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+User=user
+Environment=PATH=/home/user/.local/bin:/usr/local/bin:/usr/bin:/bin
 WorkingDirectory=/home/user/python/xdcterm
 ExecStart=uv run --directory backend bot.py
 Restart=on-failure
 RestartSec=10
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
