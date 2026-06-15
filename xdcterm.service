@@ -5,7 +5,6 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=user
 WorkingDirectory=/home/user/python/xdcterm
 ExecStart=uv run --directory backend bot.py
 Restart=on-failure
