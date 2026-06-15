@@ -1,3 +1,5 @@
 node_modules
 dist
 dist-release
+__pycache__
+backend/.venv

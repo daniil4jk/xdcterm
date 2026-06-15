@@ -7,30 +7,32 @@ own risk.
 
 ## Building
 
-Perform the following steps to build the frontend webxdc app:
+### Frontend
 
     cd frontend
     npm install
     npm run build
 
-This will build `frontend/dist-release/xdcterm.xdc`.
+This builds `frontend/dist-release/xdcterm.xdc`.
 
-Then go back to the root repository and do the following:
+### Backend (bot)
 
-- install bot dependencies in the repository root `npm install`
+    cd backend
+    uv sync
 
-- run the chat bot from the root repository directory:
+## Running
 
-  `npm start`
+First, configure a Delta Chat account for the bot. You can use a test account
+from `nine.testrun.org`:
 
-  and copy the "OPENPGP4FPR:" URL into your clipboard
+    cd backend
+    uv run bot.py init DCACCOUNT:nine.testrun.org
 
-- Got to a Delta chat app and the "QR" code scanning activity and use "paste
-  from clipboard"
+Then start the bot:
 
-- wait for Delta Chat to successfully create an end-to-end encrypted chat with
-  the bot
+    uv run bot.py serve
 
-- say "hi" to the bot and click the returned "XDCTerm" frontend app
-
-- start typing into the terminal
+An `OPENPGP4FPR:` QR URL will be printed. Copy it, open your Delta Chat app,
+go to the QR code scanning activity, and paste the URL. Wait for the
+end-to-end encrypted chat to be created, then say "hi" — the bot responds with
+the XDCTerm app. Click it and start typing.
