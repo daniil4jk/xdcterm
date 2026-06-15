@@ -14,6 +14,8 @@ XDCterm — это терминальный эмулятор, работающи
 
 ## Установка
 
+Build order — сначала frontend, потом backend.
+
 ### Frontend
 
 ```bash
@@ -29,28 +31,35 @@ npm run build
 ```bash
 cd backend
 uv sync
-uv run bot.py
 ```
 
-### Создание аккаунта и тестовый запуск
+### Инициализация аккаунта и тестовый запуск
 
 ```bash
-uv run bot.py init DCACCOUNT:nine.testrun.org #подставьте суда свой сервере
+cd backend
+uv run bot.py init DCACCOUNT:nine.testrun.org
 uv run bot.py serve
 ```
 
-### Запуск на постоянку
+Подставьте свой сервер вместо `nine.testrun.org`.
 
-Сервис запускается от непривилегированного пользователя через systemd.
+### Деплой (systemd user service)
 
 ```bash
-cp xdcterm.service ~/.config/systemd/user/
+# скопировать сервис
+cp backend/xdcterm.service ~/.config/systemd/user/
+
+# перечитать юниты
 systemctl --user daemon-reload
+
+# запустить
 systemctl --user enable --now xdcterm
+
+# включить автозапуск после перезагрузки
 sudo loginctl enable-linger user
 ```
 
-### Ссылки и логи использования терминала
+### Логи
 
 ```bash
 journalctl --user -u xdcterm -f
