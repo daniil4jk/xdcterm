@@ -48,14 +48,11 @@ class Database:
                     value TEXT NOT NULL
                 );
             """)
-            c.execute("INSERT OR IGNORE INTO config (key, value) SELECT 'admin_id', CAST(MIN(user_id) AS TEXT) FROM users")
             c.commit()
 
     def upsert_user(self, user_id: int, display_name: str, addr: str) -> User:
         with self._lock:
-            c = self._get_conn()
-            was_empty = c.execute("SELECT COUNT(*) AS cnt FROM users").fetchone()["cnt"] == 0
-            c.execute(
+            self._get_conn().execute(
                 """INSERT INTO users (user_id, display_name, addr, updated_at)
                    VALUES (?, ?, ?, datetime('now'))
                    ON CONFLICT(user_id) DO UPDATE SET
@@ -64,9 +61,7 @@ class Database:
                        updated_at=excluded.updated_at""",
                 (user_id, display_name, addr),
             )
-            if was_empty:
-                c.execute("INSERT OR REPLACE INTO config (key, value) VALUES ('admin_id', ?)", (str(user_id),))
-            c.commit()
+            self._get_conn().commit()
             return User(user_id, display_name, addr)
 
     def add_message(self, msg_id: int, user_id: int) -> None:
@@ -114,12 +109,19 @@ class Database:
             ).fetchall()
             return [dict(r) for r in rows]
 
-    def get_admin_message_id(self) -> int | None:
+    def get_config(self, key: str) -> str | None:
         with self._lock:
             row = self._get_conn().execute(
-                "SELECT m.msg_id FROM messages m JOIN config k ON k.value = CAST(m.user_id AS TEXT) WHERE k.key = 'admin_id' LIMIT 1"
+                "SELECT value FROM config WHERE key = ?", (key,)
             ).fetchone()
-            return row["msg_id"] if row else None
+            return row["value"] if row else None
+
+    def set_config(self, key: str, value: str) -> None:
+        with self._lock:
+            self._get_conn().execute(
+                "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", (key, value)
+            )
+            self._get_conn().commit()
 
 
 db = Database()

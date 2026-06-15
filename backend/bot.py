@@ -93,7 +93,7 @@ class PTYManager:
         self.spawn(ctx, msg_id)
         db.open_session(msg_id, user.user_id)
         ctx.log("PTY %d opened by %s with %s", msg_id, user.display_name, user.addr)
-        _notify_admin(ctx, f"PTY {msg_id} opened by {user.display_name} with {user.addr}")
+        _notify_group(ctx, f"PTY {msg_id} opened by {user.display_name} with {user.addr}")
         self._reset_timer(ctx, msg_id)
 
     def kill(self, ctx: AccountContext, msg_id: int, reason: str = "exited") -> None:
@@ -109,7 +109,7 @@ class PTYManager:
         else:
             text = f"PTY {msg_id} closed because {reason}"
         ctx.log(text)
-        _notify_admin(ctx, text)
+        _notify_group(ctx, text)
 
     def _reset_timer(self, ctx: AccountContext, msg_id: int) -> None:
         self._cancel_timer(msg_id)
@@ -137,13 +137,12 @@ def _send_webxdc(ctx: AccountContext, chatid: int, contact_id: int) -> int:
     return msgid
 
 
-def _notify_admin(ctx: AccountContext, text: str) -> None:
-    msg_id = db.get_admin_message_id()
-    if not msg_id:
+def _notify_group(ctx: AccountContext, text: str) -> None:
+    group_id = db.get_config("notify_group_id")
+    if not group_id:
         return
     try:
-        msg = ctx.get_message(msg_id)
-        ctx.send_msg(msg.chat_id, MsgData(text=text))
+        ctx.send_msg(int(group_id), MsgData(text=text))
     except Exception:
         pass
 
@@ -241,6 +240,28 @@ def on_start(bot, args) -> None:
         current = bot.rpc.get_config(accid, "displayname")
         if not current:
             bot.rpc.set_config(accid, "displayname", display_name)
+
+    group_id = db.get_config("notify_group_id")
+    if not group_id:
+        accids = bot.rpc.get_all_account_ids()
+        if accids:
+            try:
+                group_name = f"{hostname} terminal logs"
+                chat_id = bot.rpc.create_group_chat(accids[0], group_name, False)
+                db.set_config("notify_group_id", str(chat_id))
+                group_id = str(chat_id)
+                bot.logger.info("Notification group created: id=%d name=%s", chat_id, group_name)
+            except Exception as e:
+                bot.logger.warning("Failed to create notification group: %s", e)
+
+    if group_id:
+        accids = bot.rpc.get_all_account_ids()
+        if accids:
+            try:
+                qr_link = bot.rpc.get_chat_securejoin_qr_code(accids[0], int(group_id))
+                bot.logger.info("Notification group invite: %s", qr_link)
+            except Exception as e:
+                bot.logger.warning("Failed to get group invite: %s", e)
 
 
 if __name__ == "__main__":
