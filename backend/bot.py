@@ -26,6 +26,15 @@ cli = BotCli("xdcterm")
 
 db.init()
 
+_HELP_TEXT = """\
+XDCterm — удалённый терминал в Delta Chat
+
+Команды:
+/newterm — создать новую сессию терминала
+/list — список активных сессий
+/help — эта справка
+"""
+
 
 class PTYProcess:
     def __init__(self, ctx: AccountContext, msg_id: int) -> None:
@@ -147,21 +156,34 @@ def _notify_group(ctx: AccountContext, text: str) -> None:
         pass
 
 
+def _send_help(bot, accid, chatid) -> None:
+    bot.rpc.send_msg(accid, chatid, MsgData(text=_HELP_TEXT))
+
+
 @cli.on(events.RawEvent(types=[EventType.SECUREJOIN_INVITER_PROGRESS]))
 def on_securejoin(bot, accid, event) -> None:
     if event.progress != 1000:
         return
     if bot.rpc.get_contact(accid, event.contact_id).is_bot:
         return
-    ctx = AccountContext(bot, accid)
     chatid = bot.rpc.create_chat_by_contact_id(accid, event.contact_id)
-    _send_webxdc(ctx, chatid, event.contact_id)
+    _send_help(bot, accid, chatid)
 
 
 @cli.on(events.NewMessage(command="/start"))
-def on_start_cmd(bot, accid, event) -> None:
+def on_start(bot, accid, event) -> None:
+    _send_help(bot, accid, event.msg.chat_id)
+
+
+@cli.on(events.NewMessage(command="/newterm"))
+def on_newterm(bot, accid, event) -> None:
     ctx = AccountContext(bot, accid)
     _send_webxdc(ctx, event.msg.chat_id, event.msg.from_id)
+
+
+@cli.on(events.NewMessage(command="/help"))
+def on_help(bot, accid, event) -> None:
+    _send_help(bot, accid, event.msg.chat_id)
 
 
 @cli.on(events.NewMessage(command="/list"))
