@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "=== Deploy: systemd service ==="
+
 SCRIPT_DIR="$(realpath "$(dirname "$0")")"
 REPO_DIR="$(realpath "$SCRIPT_DIR/..")"
 
@@ -32,3 +34,4 @@ systemctl --user daemon-reload
 systemctl --user enable --now xdcterm
 
 echo "Installed systemd user service: $TARGET"
+echo "=== Done ==="

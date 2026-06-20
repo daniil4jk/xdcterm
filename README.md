@@ -16,10 +16,28 @@ XDCterm — это терминальный эмулятор, работающи
 
 ### Скрипт сборки и деплоя
 
-Просто выполните
-
 ```bash
 ./build.sh
+```
+
+### Настройка аккаунта
+
+#### Инициализация аккаунта
+
+```bash
+uv run bot.py init DCACCOUNT:nine.testrun.org # Или используйте свой сервер вместо nine.testrun.org
+```
+
+#### Проверка работы
+
+```bash
+uv run bot.py serve
+```
+
+### Установка systemd сервиса
+
+```bash
+./install_systemd.sh
 ```
 
 ### Логи

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(realpath "$(dirname "$0")")"
-REPO_DIR="$(realpath "$SCRIPT_DIR/..")"
+REPO_DIR="$(realpath "$SCRIPT_DIR/..")/xdcterm"
 
 echo "=== Frontend: npm install + build ==="
 cd "$REPO_DIR/frontend"
@@ -12,8 +12,5 @@ npm run build
 echo "=== Backend: uv sync ==="
 cd "$REPO_DIR/backend"
 uv sync
-
-echo "=== Systemd: install service ==="
-bash "$REPO_DIR/systemd/install.sh"
 
 echo "=== Done ==="
