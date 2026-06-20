@@ -4,7 +4,7 @@ set -euo pipefail
 echo "=== Deploy: systemd service ==="
 
 SCRIPT_DIR="$(realpath "$(dirname "$0")")"
-REPO_DIR="$(realpath "$SCRIPT_DIR/..")"
+REPO_DIR="$SCRIPT_DIR"
 
 if ! command -v uv &>/dev/null; then
     echo "Error: uv not found in PATH" >&2

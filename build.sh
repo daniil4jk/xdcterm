@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(realpath "$(dirname "$0")")"
-REPO_DIR="$(realpath "$SCRIPT_DIR/..")/xdcterm"
+REPO_DIR="$SCRIPT_DIR"
 
 echo "=== Frontend: npm install + build ==="
 cd "$REPO_DIR/frontend"
