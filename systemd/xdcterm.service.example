@@ -5,8 +5,8 @@ After=network-online.target
 [Service]
 Type=simple
 Environment=TERM=xterm-256color
-WorkingDirectory=/home/user/python/xdcterm
-ExecStart=/home/user/.local/bin/uv run --directory backend bot.py serve
+WorkingDirectory=__WORKDIR__/backend
+ExecStart=__UV_BIN__ run --directory __WORKDIR__/backend bot.py serve
 Restart=on-failure
 RestartSec=10
 
