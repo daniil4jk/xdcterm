@@ -296,6 +296,9 @@ def on_start(bot, args) -> None:
                 bot.logger.warning("Failed to send startup notification: %s", e)
 
     def _shutdown_handler(signum, frame):
+        timer = threading.Timer(3.0, os._exit, args=[0])
+        timer.daemon = True
+        timer.start()
         try:
             gid = db.get_config("notify_group_id")
             if gid:
@@ -303,20 +306,17 @@ def on_start(bot, args) -> None:
                     mid = bot.rpc.send_msg(
                         accid, int(gid), MsgData(text=f"🔴 Computer {hostname} shutting down")
                     )
-                    import time
-
-                    deadline = time.monotonic() + 30
                     bot.run_until(
                         lambda ev: (
                             ev.event.kind in (EventType.MSG_DELIVERED, EventType.MSG_FAILED)
                             and ev.event.msg_id == mid
-                        )
-                        or time.monotonic() > deadline,
+                        ),
                         accid,
                     )
                     break
         except Exception:
             pass
+        timer.cancel()
         os._exit(0)
 
     signal.signal(signal.SIGTERM, _shutdown_handler)

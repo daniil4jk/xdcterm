@@ -9,6 +9,7 @@ WorkingDirectory=__WORKDIR__/backend
 ExecStart=__UV_BIN__ run --directory __WORKDIR__/backend bot.py serve
 Restart=on-failure
 RestartSec=10
+KillMode=mixed
 
 [Install]
 WantedBy=default.target
