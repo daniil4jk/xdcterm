@@ -1,5 +1,6 @@
 import fcntl
 import os
+import signal
 import socket
 import pty
 import struct
@@ -284,6 +285,42 @@ def on_start(bot, args) -> None:
                 bot.logger.info("Notification group invite: %s", qr_link)
             except Exception as e:
                 bot.logger.warning("Failed to get group invite: %s", e)
+
+    if group_id:
+        accids = bot.rpc.get_all_account_ids()
+        if accids:
+            try:
+                ctx = AccountContext(bot, accids[0])
+                _notify_group(ctx, f"🟢 Computer {hostname} started")
+            except Exception as e:
+                bot.logger.warning("Failed to send startup notification: %s", e)
+
+    def _shutdown_handler(signum, frame):
+        try:
+            gid = db.get_config("notify_group_id")
+            if gid:
+                for accid in bot.rpc.get_all_account_ids():
+                    mid = bot.rpc.send_msg(
+                        accid, int(gid), MsgData(text=f"🔴 Computer {hostname} shutting down")
+                    )
+                    import time
+
+                    deadline = time.monotonic() + 30
+                    bot.run_until(
+                        lambda ev: (
+                            ev.event.kind in (EventType.MSG_DELIVERED, EventType.MSG_FAILED)
+                            and ev.event.msg_id == mid
+                        )
+                        or time.monotonic() > deadline,
+                        accid,
+                    )
+                    break
+        except Exception:
+            pass
+        os._exit(0)
+
+    signal.signal(signal.SIGTERM, _shutdown_handler)
+    signal.signal(signal.SIGINT, _shutdown_handler)
 
 
 if __name__ == "__main__":

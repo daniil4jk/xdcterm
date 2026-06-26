@@ -4,3 +4,4 @@ dist-release
 __pycache__
 backend/.venv
 backend/data
+**.lock
